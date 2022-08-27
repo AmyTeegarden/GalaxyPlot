@@ -1,2 +1,1 @@
 # GalaxyPlot
-# GalaxyPlot
