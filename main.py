@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import matplotlib.patches as mpatches
+import argparse
+import os.path
 from numpy import sin, cos, radians, array
 
 '''To do:
@@ -8,16 +9,22 @@ from numpy import sin, cos, radians, array
     Save image
     '''
 
-GALAXY_FILE_LOCATION = 'eso1339e.tif' #(Original from (https://cdn.eso.org/images/original/eso1339e.tif)
 SUN_LOCATION = array([(2799), (3872)]) #pixel location of sun in image
 LY_LENGTH = 206.0/5000 #number of pixels per light year
-FIGSIZE = 9 #width and height in inches
 INTERPOLATION = 'hanning' #Interpolation needed for antialiasing
-DATAFILE = 'locations.csv' #File with comma separated values for locations to be plotted.
+
+parser = argparse.ArgumentParser(description = "Plot points over a top-down image of the galaxy.")
+parser.add_argument('--figsize', '-f', type = float, default = 9, help = 'Size of figure in inches')
+parser.add_argument('--datafile', '-d', default = 'locations.csv', help = 'File containing location data')
+parser.add_argument('--galaxy', '-g', default = 'eso1339e.tif', help = '''Galaxy background file. 
+Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
+parser.add_argument('--savefile', '-s', help = 'Location to save file.')
+args = parser.parse_args()
+
 
 def convert_coords(gal_longitude, gal_latitude, light_year_distance):
     '''Convert the galactic longitude, galactic latitude, and distance in light years to data coordinates'''
-    dist = abs(light_year_distance * cos(gal_latitude)) #calculate distance in plane of disk
+    dist = abs(light_year_distance * cos(radians(gal_latitude))) #calculate distance in plane of disk
     angle = radians(gal_longitude + 90) #transform from galactic longitude to radians
     dir_from_sun = array([cos(angle), -sin(angle)]) #unit vector in direction of object
     rel_coords = dist * LY_LENGTH * dir_from_sun #calculate pixels up/down and left/right from sun
@@ -26,7 +33,7 @@ def convert_coords(gal_longitude, gal_latitude, light_year_distance):
 
 
 
-with open(DATAFILE, 'r') as f:
+with open(args.datafile, 'r') as f:
     f.readline() #skip header
     raw_data = f.readlines()
 
@@ -50,11 +57,11 @@ for line in raw_data:
 
 
 
-fig = plt.figure(figsize = (FIGSIZE, FIGSIZE))
+fig = plt.figure(figsize = (args.figsize, args.figsize))
 ax = plt.Axes(fig, [0., 0., 1., 1.])
 ax.set_axis_off()
 fig.add_axes(ax)
-img = mpimg.imread(GALAXY_FILE_LOCATION) #Read image data for Milky Way 
+img = mpimg.imread(args.galaxy) #Read image data for Milky Way 
 ax.imshow(img, interpolation = INTERPOLATION) #Draw background image of Milky Way
 
 #add credit textbox:
@@ -69,3 +76,13 @@ for (x, y), label in data:
 ax.scatter(*SUN_LOCATION, color = 'yellow')
 ax.annotate('Sun', (SUN_LOCATION[0], SUN_LOCATION[1]), xytext = (10, 0), textcoords = 'offset pixels', color = 'yellow')
 plt.show()
+
+if args.savefile:
+    filename, extension = args.savefile.split('.')
+    counter = 0
+    sf = args.savefile
+    while os.path.exists(sf):
+        counter += 1
+        sf = '{}_{}.{}'.format(filename, counter, extension)
+    fig.savefig(sf)
+
