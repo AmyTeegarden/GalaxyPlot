@@ -19,8 +19,13 @@ parser.add_argument('--datafile', '-d', default = 'locations.csv', help = 'File 
 parser.add_argument('--galaxy', '-g', default = 'eso1339e.tif', help = '''Galaxy background file. 
 Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
 parser.add_argument('--savefile', '-s', help = 'Location to save file.')
+parser.add_argument('--interpolation', default = 'hanning', help = 'Interpolation type')
+parser.add_argument('--no-interpolation', '-n', help = 'Turns off interpolation', action = 'store_true',
+        dest = 'no_interp')
 args = parser.parse_args()
 
+if args.no_interp:
+    args.interpolation = None
 
 def convert_coords(gal_longitude, gal_latitude, light_year_distance):
     '''Convert the galactic longitude, galactic latitude, and distance in light years to data coordinates'''
@@ -62,7 +67,7 @@ ax = plt.Axes(fig, [0., 0., 1., 1.])
 ax.set_axis_off()
 fig.add_axes(ax)
 img = mpimg.imread(args.galaxy) #Read image data for Milky Way 
-ax.imshow(img, interpolation = INTERPOLATION) #Draw background image of Milky Way
+ax.imshow(img, interpolation = args.interpolation) #Draw background image of Milky Way
 
 #add credit textbox:
 ax.text(.02, .02, 'Credit: NASA/JPL-Caltech/ESO/R. Hurt\nhttps://www.eso.org/public/images/eso1339e/', 
