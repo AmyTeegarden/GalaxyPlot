@@ -5,8 +5,8 @@ import os.path
 from numpy import sin, cos, radians, array
 
 '''To do:
-    UI function (change figsize, read in data file?)
-    Save image
+    Use csv library
+    Figure out why most extensions don't work for saving the file
     '''
 
 SUN_LOCATION = array([(2799), (3872)]) #pixel location of sun in image
@@ -80,6 +80,7 @@ for (x, y), label in data:
 
 ax.scatter(*SUN_LOCATION, color = 'yellow')
 ax.annotate('Sun', (SUN_LOCATION[0], SUN_LOCATION[1]), xytext = (10, 0), textcoords = 'offset pixels', color = 'yellow')
+
 plt.show()
 
 if args.savefile:
