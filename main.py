@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import argparse
+import csv
 import os.path
 from numpy import sin, cos, radians, array
+
 
 '''To do:
     Use csv library
@@ -13,19 +15,20 @@ SUN_LOCATION = array([(2799), (3872)]) #pixel location of sun in image
 LY_LENGTH = 206.0/5000 #number of pixels per light year
 INTERPOLATION = 'hanning' #Interpolation needed for antialiasing
 
-parser = argparse.ArgumentParser(description = "Plot points over a top-down image of the galaxy.")
-parser.add_argument('--figsize', '-f', type = float, default = 9, help = 'Size of figure in inches')
-parser.add_argument('--datafile', '-d', default = 'locations.csv', help = 'File containing location data')
-parser.add_argument('--galaxy', '-g', default = 'eso1339e.tif', help = '''Galaxy background file. 
-Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
-parser.add_argument('--savefile', '-s', help = 'Location to save file.')
-parser.add_argument('--interpolation', default = 'hanning', help = 'Interpolation type')
-parser.add_argument('--no-interpolation', '-n', help = 'Turns off interpolation', action = 'store_true',
-        dest = 'no_interp')
-args = parser.parse_args()
-
-if args.no_interp:
-    args.interpolation = None
+def arguments():
+    parser = argparse.ArgumentParser(description = "Plot points over a top-down image of the galaxy.")
+    parser.add_argument('--figsize', '-f', type = float, default = 9, help = 'Size of figure in inches')
+    parser.add_argument('--datafile', '-d', default = 'locations.csv', help = 'File containing location data')
+    parser.add_argument('--galaxy', '-g', default = 'eso1339e.tif', help = '''Galaxy background file. 
+    Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
+    parser.add_argument('--savefile', '-s', help = 'Location to save file.')
+    parser.add_argument('--interpolation', default = 'hanning', help = 'Interpolation type')
+    parser.add_argument('--no-interpolation', '-n', help = 'Turns off interpolation', action = 'store_true',
+            dest = 'no_interp')
+    args = parser.parse_args()
+    if args.no_interp:
+        args.interpolation = None
+    return args
 
 def convert_coords(gal_longitude, gal_latitude, light_year_distance):
     '''Convert the galactic longitude, galactic latitude, and distance in light years to data coordinates'''
@@ -36,7 +39,11 @@ def convert_coords(gal_longitude, gal_latitude, light_year_distance):
     abs_coords = rel_coords + SUN_LOCATION #transform relative to absolute coordinates on image
     return abs_coords
 
+def read_file(filename):
+    with open(filename, 'r') as f:
+        data = csv.reader(f)
 
+args = arguments()
 
 with open(args.datafile, 'r') as f:
     f.readline() #skip header
