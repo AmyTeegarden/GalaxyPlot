@@ -20,11 +20,13 @@ def arguments():
     parser.add_argument('--figsize', '-f', type = float, default = 9, help = 'Size of figure in inches')
     parser.add_argument('--datafile', '-d', default = 'locations.csv', help = 'File containing location data')
     parser.add_argument('--galaxy', '-g', default = 'eso1339e.tif', help = '''Galaxy background file. 
-    Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
+        Download from (Original from (https://cdn.eso.org/images/original/eso1339e.tif)''')
     parser.add_argument('--savefile', '-s', help = 'Location to save file.')
     parser.add_argument('--interpolation', default = 'hanning', help = 'Interpolation type')
     parser.add_argument('--no-interpolation', '-n', help = 'Turns off interpolation', action = 'store_true',
-            dest = 'no_interp')
+        dest = 'no_interp')
+    parser.add_argument('--no-header', help = 'Use this option when the data file does not have a header row.', 
+        action = 'store_false', dest = 'header')
     args = parser.parse_args()
     if args.no_interp:
         args.interpolation = None
@@ -41,15 +43,24 @@ def convert_coords(gal_longitude, gal_latitude, light_year_distance):
 
 def read_file(filename):
     with open(filename, 'r') as f:
-        data = csv.reader(f)
+        raw_data = csv.reader(f)
+        data = []
+        for row in data:
+            glong, glat, dist, label, to_plot = row
+            if to_plot != 'Y': #skip lines that aren't supposed to be plotted
+                continue
+            nums = (float(x) for x in (glong, glat, dist))
 
 args = arguments()
+
+read_file(args.datafile)
 
 with open(args.datafile, 'r') as f:
     f.readline() #skip header
     raw_data = f.readlines()
 
 data = []
+
 
 #process raw data into plottable coordinates and labels
 for line in raw_data:
