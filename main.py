@@ -44,38 +44,33 @@ def read_file(filename):
         raw_data = csv.reader(f)
         data = []
         for row in raw_data:
-            glong, glat, dist, label, to_plot = row
+            try:
+                glong, glat, dist, label, to_plot = row
+            except ValueError:
+                raise Exception('''You must have five values in each row: galactic longitude, 
+                galactic latitude, distance in light years, a label, and whether to plot this point.''')
             if to_plot != 'Y': #skip lines that aren't supposed to be plotted
                 continue
             nums = [float(x) for x in (glong, glat, dist)]
             data.append((nums, label))
     return data
 
+def create_plottable(data):
+    plot = []
+    for loc, label in data:
+        coords = convert_coords(*loc)
+        plot.append((coords, label))
+    return plot
+
+def import_data(filename):
+    data = read_file(filename)
+    data = create_plottable(data)
+    return data
+
 args = arguments()
+data = import_data(args.datafile)
 
 
-with open(args.datafile, 'r') as f:
-    f.readline() #skip header
-    raw_data = f.readlines()
-
-data = []
-
-
-#process raw data into plottable coordinates and labels
-for line in raw_data:
-    s = line.strip() #remove newline
-    if s[-1] != 'Y': #don't plot things without a Y in the display column
-        continue
-    if ',' not in s:
-        raise Exception("You must use a comma to separate values.")
-    try:
-        glong, glat, dist, label, _ = s.split(',') #split on delimiter
-    except ValueError:
-        raise Exception('''You must have five values in each row: galactic longitude, 
-        galactic latitude, distance in light years, a label, and whether to plot this point.''')
-    coords = [float(x) for x in (glong, glat, dist)] #make values floats
-    plottable_coords = convert_coords(*coords)
-    data.append((plottable_coords, label))
 
 
 
