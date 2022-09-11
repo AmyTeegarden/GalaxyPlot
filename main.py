@@ -67,40 +67,38 @@ def import_data(filename):
     data = create_plottable(data)
     return data
 
-args = arguments()
-data = import_data(args.datafile)
+def main():
+    args = arguments()
+    data = import_data(args.datafile)
+    fig = plt.figure(figsize = (args.figsize, args.figsize))
+    ax = plt.Axes(fig, [0., 0., 1., 1.])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    img = mpimg.imread(args.galaxy) #Read image data for Milky Way 
+    ax.imshow(img, interpolation = args.interpolation) #Draw background image of Milky Way
 
+    #add credit textbox:
+    ax.text(.02, .02, 'Credit: NASA/JPL-Caltech/ESO/R. Hurt\nhttps://www.eso.org/public/images/eso1339e/', 
+            transform = ax.transAxes, color = 'gray', fontsize = 8, bbox = {'fill' : True, 
+            'facecolor': 'black', 'alpha' :.5})
 
+    for (x, y), label in data:
+        ax.scatter(x, y, color = 'black')
+        ax.annotate(label, (x, y), xytext = (10, 0), textcoords = 'offset pixels')
 
+    ax.scatter(*SUN_LOCATION, color = 'yellow')
+    ax.annotate('Sun', (SUN_LOCATION[0], SUN_LOCATION[1]), xytext = (10, 0), textcoords = 'offset pixels', color = 'yellow')
 
+    plt.show()
 
-fig = plt.figure(figsize = (args.figsize, args.figsize))
-ax = plt.Axes(fig, [0., 0., 1., 1.])
-ax.set_axis_off()
-fig.add_axes(ax)
-img = mpimg.imread(args.galaxy) #Read image data for Milky Way 
-ax.imshow(img, interpolation = args.interpolation) #Draw background image of Milky Way
+    if args.savefile:
+        filename, extension = args.savefile.split('.')
+        counter = 0
+        sf = args.savefile
+        while os.path.exists(sf):
+            counter += 1
+            sf = '{}_{}.{}'.format(filename, counter, extension)
+        fig.savefig(sf)
 
-#add credit textbox:
-ax.text(.02, .02, 'Credit: NASA/JPL-Caltech/ESO/R. Hurt\nhttps://www.eso.org/public/images/eso1339e/', 
-        transform = ax.transAxes, color = 'gray', fontsize = 8, bbox = {'fill' : True, 
-        'facecolor': 'black', 'alpha' :.5})
-
-for (x, y), label in data:
-    ax.scatter(x, y, color = 'black')
-    ax.annotate(label, (x, y), xytext = (10, 0), textcoords = 'offset pixels')
-
-ax.scatter(*SUN_LOCATION, color = 'yellow')
-ax.annotate('Sun', (SUN_LOCATION[0], SUN_LOCATION[1]), xytext = (10, 0), textcoords = 'offset pixels', color = 'yellow')
-
-plt.show()
-
-if args.savefile:
-    filename, extension = args.savefile.split('.')
-    counter = 0
-    sf = args.savefile
-    while os.path.exists(sf):
-        counter += 1
-        sf = '{}_{}.{}'.format(filename, counter, extension)
-    fig.savefig(sf)
-
+if __name__ == "__main__":
+    main()
